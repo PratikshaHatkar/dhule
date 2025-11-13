@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "new-mini",
   "version": "1.0.0",
   "type": "module",
@@ -7,10 +8,23 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
+=======
+  "name": "mini-project",
+  "version": "1.0.0",
+  "description": "The dbms mini project of the semister 5",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PratikshaHatkar/Mini-Project.git"
+>>>>>>> fc9dca948ace468c78e16798eb77cc0f542afa71
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+<<<<<<< HEAD
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -20,5 +34,15 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "mysql2": "^3.15.3"
+=======
+  "bugs": {
+    "url": "https://github.com/PratikshaHatkar/Mini-Project/issues"
+  },
+  "homepage": "https://github.com/PratikshaHatkar/Mini-Project#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mysql": "^2.18.1"
+>>>>>>> fc9dca948ace468c78e16798eb77cc0f542afa71
   }
 }
