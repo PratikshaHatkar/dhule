@@ -1,6 +1,14 @@
 
 
-// 1 search admin by city works sigup work 
+
+
+
+
+
+
+
+//old code works good
+// // 1 search admin by city works sigup work 
 import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
@@ -37,6 +45,44 @@ db.connect((err) => {
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "signup.html"));
 });
+
+//new code
+app.post("/api/addMedicine", (req, res) => {
+  const { name, company, use, composition, symptoms, stock, admin_id } = req.body;
+
+  const sql = "CALL insert_Data(?, ?, ?, ?, ?, ?, ?)";
+
+  db.query(sql, [name, company, use, composition, symptoms, stock, admin_id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Error inserting medicine" });
+      }
+      res.json({ message: "Medicine inserted successfully!" });
+    }
+  );
+});
+
+//fetch medicines;;;
+app.get("/api/medicines", (req, res) => {
+  const sql = `
+    SELECT m.medicine_id, m.name, m.usage_info AS use,
+           am.stock_status AS stock,
+           GROUP_CONCAT(DISTINCT c.ingredient SEPARATOR ', ') AS composition,
+           cm.company_name AS company
+    FROM medicines m
+    JOIN admin_medicines am ON m.medicine_id = am.medicine_id
+    JOIN composition c ON m.medicine_id = c.medicine_id
+    JOIN company_master cm ON cm.company_id = m.company_id
+    GROUP BY m.medicine_id;
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err });
+    res.json(results);
+  });
+});
+
 
 // ✅ SIGNUP API
 app.post("/signup", async (req, res) => {
