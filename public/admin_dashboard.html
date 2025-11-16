@@ -309,13 +309,8 @@
   </div>
 
   <script>
-    // let medicines = [
-    //   { name: "Chyawanprash", use: "Boosts immunity", stock: 50, composition: "Amla, Ashwagandha, Giloy", company: "Patanjali" },
-    //   { name: "Septilin", use: "Fights infections", stock: 40, composition: "Tinospora cordifolia, licorice", company: "Himalaya" },
-    //   { name: "Kesari Kalp", use: "Enhances energy", stock: 30, composition: "Saffron, Amla, Ashwagandha", company: "Baidyanath" },
-    //   { name: "Green Essentials", use: "Daily wellness", stock: 25, composition: "Spirulina, Wheatgrass", company: "Planet Ayurveda" },
-    //   { name: "Liv.52 DS", use: "Supports liver", stock: 20, composition: "Himsra, Kasani, Mandur Bhasma", company: "Himalaya" },
-    // ];
+
+    let medicines = [];
 
     const tableBody = document.getElementById("medicineList");
     const modal = document.getElementById("medicineModal");
@@ -355,13 +350,70 @@
     });
 
 
-    //new code 
+
+    //new 3 code 
     async function fetchMedicines() {
-const response = await fetch("http://localhost:5000/api/medicines");
-const data = await response.json();
-medicines = data;
-renderMedicines(searchInput.value.toLowerCase());
+  const adminId = localStorage.getItem("adminId");
+
+  if (!adminId) {
+    alert("Admin ID missing. Login again.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const response = await fetch(`http://localhost:5000/api/dashboard/medicines/admin/${adminId}`);
+  const data = await response.json();
+
+  if (!Array.isArray(data)) {
+    console.error("Backend error:", data);
+    alert("Failed to load medicines");
+    return;
+  }
+
+  medicines = data.map(m => ({
+    name: m.medicine_name,
+    use: m.use_info,
+    stock: m.stock,
+    composition: m.composition,
+    company: m.company_name
+  }));
+
+  renderMedicines(searchInput.value.toLowerCase());
 }
+
+//new new code 
+
+// async function fetchMedicines() {
+//   const adminId = localStorage.getItem("adminId");
+
+//   if (!adminId) {
+//     alert("Admin ID missing. Login again.");
+//     window.location.href = "login.html";
+//     return;
+//   }
+
+//   const response = await fetch(`http://localhost:5000/api/dashboard/medicines/admin/${adminId}`);
+//   const data = await response.json();
+
+//   medicines = data.map(m => ({
+//     name: m.medicine_name,
+//     use: m.use_info,
+//     stock: m.stock,
+//     composition: m.composition,
+//     company: m.company_name
+//   }));
+
+//   renderMedicines(searchInput.value.toLowerCase());
+// }
+
+
+    //new code 
+//     async function fetchMedicines() {
+// const response = await fetch("http://localhost:5000/api/medicines");
+// const data = await response.json();
+// medicines = data;
+// renderMedicines(searchInput.value.toLowerCase());
+// }
 //-------this also
 
     form.addEventListener("submit", async (e) => {

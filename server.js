@@ -1,12 +1,4 @@
 
-
-
-
-
-
-
-
-
 //old code works good
 // // 1 search admin by city works sigup work 
 import express from "express";
@@ -100,8 +92,8 @@ app.post("/signup", async (req, res) => {
   });
 });
 
-// ✅ LOGIN API
-app.post("/login", (req, res) => {
+//new login api
+app.post("/api/login", (req, res) => {
   const { role, email, password } = req.body;
   const table = role === "admin" ? "admin" : "users";
 
@@ -113,17 +105,55 @@ app.post("/login", (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
-    res.json({
-      message: `${role} logged in successfully!`,
+    if (role === "admin") {
+      return res.json({
+        message: "Admin logged in successfully!",
+        role,
+        admin: {
+          admin_id: user.admin_id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+    }
+
+    // USER LOGIN
+    return res.json({
+      message: "User logged in successfully!",
       role,
       user: {
-        id: user.user_id || user.admin_id,
+        user_id: user.user_id,
         name: user.name,
         email: user.email,
       },
     });
   });
 });
+
+// // ✅ LOGIN API old login api
+// app.post("/login", (req, res) => {
+//   const { role, email, password } = req.body;
+//   const table = role === "admin" ? "admin" : "users";
+
+//   db.query(`SELECT * FROM ${table} WHERE email = ?`, [email], async (err, result) => {
+//     if (err) return res.status(500).json({ message: "Database error" });
+//     if (result.length === 0) return res.status(400).json({ message: "User not found" });
+
+//     const user = result[0];
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+
+//     res.json({
+//       message: `${role} logged in successfully!`,
+//       role,
+//       user: {
+//         id: user.user_id || user.admin_id,
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//   });
+// });
 
 
 
@@ -232,23 +262,6 @@ router.get("/api/medicines", async (req, res) => {
 // ===================== ✅ NEWLY ADDED DASHBOARD ROUTES =====================
 
 // ✅ Fetch Admins dynamically (Dashboard)
-app.get("/api/dashboard/admins/:city", (req, res) => {
-  const city = req.params.city;
-  const query = `
-    SELECT admin_id, name, email, address, city, phone 
-    FROM admin 
-    WHERE city = ?;
-  `;
-  db.query(query, [city], (err, results) => {
-    if (err) {
-      console.error("Dashboard Admin Fetch Error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json(results);
-  });
-});
-
-// ✅ Fetch Medicines dynamically for selected admin (Dashboard)
 app.get("/api/dashboard/medicines/admin/:adminId", (req, res) => {
   const adminId = req.params.adminId;
 
@@ -257,14 +270,15 @@ app.get("/api/dashboard/medicines/admin/:adminId", (req, res) => {
       m.medicine_id,
       m.name AS medicine_name,
       m.usage_info AS use_info,
-      GROUP_CONCAT(DISTINCT comp.ingredient SEPARATOR ', ') AS composition,
-      m.stock,
+      GROUP_CONCAT(DISTINCT comp.ingredient ORDER BY comp.ingredient SEPARATOR ', ') AS composition,
       c.company_name,
+      am.stock_status AS stock,
       m.image_path
-    FROM medicines m
+    FROM admin_medicines am
+    JOIN medicines m ON am.medicine_id = m.medicine_id
     JOIN company_master c ON m.company_id = c.company_id
     LEFT JOIN composition comp ON m.medicine_id = comp.medicine_id
-    WHERE m.admin_id = ?
+    WHERE am.admin_id = ?
     GROUP BY m.medicine_id;
   `;
 
@@ -276,6 +290,35 @@ app.get("/api/dashboard/medicines/admin/:adminId", (req, res) => {
     res.json(results);
   });
 });
+
+// ✅ Fetch Medicines dynamically for selected admin (Dashboard) old code 
+// app.get("/api/dashboard/medicines/admin/:adminId", (req, res) => {
+//   const adminId = req.params.adminId;
+
+//   const query = `
+//     SELECT 
+//       m.medicine_id,
+//       m.name AS medicine_name,
+//       m.usage_info AS use_info,
+//       GROUP_CONCAT(DISTINCT comp.ingredient SEPARATOR ', ') AS composition,
+//       m.stock,
+//       c.company_name,
+//       m.image_path
+//     FROM medicines m
+//     JOIN company_master c ON m.company_id = c.company_id
+//     LEFT JOIN composition comp ON m.medicine_id = comp.medicine_id
+//     WHERE m.admin_id = ?
+//     GROUP BY m.medicine_id;
+//   `;
+
+//   db.query(query, [adminId], (err, results) => {
+//     if (err) {
+//       console.error("Dashboard Medicine Fetch Error:", err);
+//       return res.status(500).json({ error: err.message });
+//     }
+//     res.json(results);
+//   });
+// });
 
 // ✅ Start Server
 const PORT = 5000;
